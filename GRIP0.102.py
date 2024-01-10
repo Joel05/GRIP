@@ -38,6 +38,7 @@ BROWN = (139,69,19)
 DGREY = (25,25,25)
 
 # set up variables
+#region
 moveLeft = False
 moveRight = False
 moveUp = False
@@ -54,7 +55,7 @@ radians = 0
 moveRadians = 0
 gdegree = 0#Ghost rotation angle
 timer = [0,0,10000,0,0,0,0,False,'10 Laps Remaining']# 0-Current Lap ,1-Last Lap ,2-Best lap ,3-Section 1 ,4-Section 2 ,5-Section 3,6-Time Dif, 7-Timer running, 8-Laps Remaining text
-drawTrack = [1,'laps1.txt','laps2.txt','laps3.txt','laps4.txt','laps5.txt','laps6.txt','laps7.txt','laps8.txt','laps9.txt']#0-Track selector, 1-4 LapRecord file names
+drawTrack = [1,'laps/laps1.txt','laps/laps2.txt','laps/laps3.txt','laps/laps4.txt','laps/laps5.txt','laps/laps6.txt','laps/laps7.txt','laps/laps8.txt','laps/laps9.txt']#0-Track selector, 1-4 LapRecord file names
 cheatCheck = [0,False,False,False,0,30,'         ',WHITE]# 0-Cheat Check ,1-Finish Line Check ,2-Section 1 Check ,3-Section 2 Check, 4-Grass Counter, 5-Grass Limit, 6-Time Dif Output, 7-Lap Text Colour
 fps = [0,60,10,60,0]# 0-On/Off, 1-Set Point, 2-Actual FPS, 3-Lowest Recorded, 4-Highest Recorded
 playerSettings = [WINDOWWIDTH/2-50,WINDOWHEIGHT/2,0,0]# 0-Player Horizontal, 1-Player Vertical, 2-Rotation position (x5 for degrees)
@@ -64,7 +65,7 @@ lapTimes = [0]#0-Lap No ,1-10 - Lap f
 displayTimeDif = 0 # Time difference display counter
 newLapRecord = [False,WHITE,'Your quickest time did not rank in the top 5',6]
 originalLapRecord = 0
-curser = [40, 190, 50, 50]# Start position for the curser on the menu
+cursor = [40, 190, 50, 50]# Start position for the cursor on the menu
 option = [0,'Choose Bike','Start Time Trial','Settings','Instructions','Quit',0,'',0]# menu options
 settings = [0,'Detail Level','Show FPS','Screen Size','Full Screen Mode','Sound On','Exit',False]# Settings page options
 banner =[50,18]# Start point for banner text animation
@@ -89,7 +90,10 @@ frontWheel = [0,0]
 rearWheel = [0,0]
 boost = []
 sound = True
+#endregion
 
+###Load Images
+#region
 gripImage = pygame.image.load('graphics/grip.png').convert_alpha()
 overheadImage = pygame.image.load('graphics/overhead_tile.png').convert_alpha()
 trackImage11 = pygame.image.load('graphics/b-1-1.png').convert_alpha()
@@ -122,8 +126,11 @@ trackImage44 = pygame.image.load('graphics/b-4-4.png').convert_alpha()
 scenaryImage1 = pygame.image.load('graphics/tree.png').convert_alpha()
 
 menuImage1 = pygame.image.load('graphics/back.png').convert_alpha()
+#endregion
+
 
 # set up the sounds
+#region sounds
 rev1Sound = pygame.mixer.Sound('sound/rev1.wav')
 rev2Sound = pygame.mixer.Sound('sound/rev2.wav')
 rev3Sound = pygame.mixer.Sound('sound/rev3.wav')
@@ -146,6 +153,7 @@ accelerating = [False,False]
 changeSound = 1
 revChannel = pygame.mixer.Channel(1)
 soundTimer = [50,0]
+#endregion
 
 # set up the fonts
 smallFont = pygame.font.SysFont(None, 20)
@@ -153,29 +161,34 @@ basicFont = pygame.font.SysFont(None, 24)
 normalFont = pygame.font.SysFont(None, 30)
 guessFont = pygame.font.SysFont(None, 36)
 
+# set up the display
 def setDisplay(w,h):
     playerSettings[0] = WINDOWWIDTH/2-50
     playerSettings[1] = WINDOWHEIGHT/2
     windowSurface = pygame.display.set_mode((w, h),show[0],32)
     pygame.display.set_caption('GRIP')
 
+#Adjust Framerate to the set prefered Framerate
 def framerate():
-    mainClock.tick(fps[1])
-    fps[2]=int(mainClock.get_fps())
+    mainClock.tick(fps[1]) #Adjust to set FPS to target FPS
     if fps[0]==1:
+        fps[2]=int(mainClock.get_fps()) #Get current FPS to show
         text = smallFont.render('Set FPS - ' + str(fps[1]), True, WHITE,)
         windowSurface.blit(text, (10,WINDOWHEIGHT-60))
         text1 = smallFont.render('Current FPS - ' + str(fps[2]), True, WHITE,)
         windowSurface.blit(text1, (10,WINDOWHEIGHT-40))
         text2 = smallFont.render('Lowest FPS - ' + str(fps[3]), True, WHITE,)
         windowSurface.blit(text2, (10,WINDOWHEIGHT-20))
+        #Get max and min FPS
         if fps[2]<fps[3]:
             fps[3]=fps[2]
         if fps[2]>fps[4]:
             fps[4]=fps[2]
 
+
+#Load Records from savefiles
 def loadRecords(drawTrack):
-    lapTimeFile = open(drawTrack[drawTrack[0]],'r+')
+    lapTimeFile = open(drawTrack[drawTrack[0]],'r+') #Open record file from currently selected Track
     lapRecord = lapTimeFile.readline().split()
     lapRecord2 = lapTimeFile.readline().split()
     lapRecord3 = lapTimeFile.readline().split()
@@ -223,10 +236,10 @@ def menu():
                     axis = joystick.get_axis( i )
             if event.type == KEYDOWN:
                     # change the keyboard variables
-                    if event.key == K_UP or event.key == ord('w'):#Curser Up
+                    if event.key == K_UP or event.key == ord('w'):#Cursor Up
                         moveDown = False
                         moveUp = True
-                    if event.key == K_DOWN or event.key == ord('s'):#Curser Down
+                    if event.key == K_DOWN or event.key == ord('s'):#Cursor Down
                         moveUp = False
                         moveDown = True
                     if event.key == K_9:#Show FPS
@@ -239,7 +252,7 @@ def menu():
                     if event.key == K_MINUS:#Decrease max FPS
                         show[1] -= 5
                     if event.key == K_RETURN or event.key == K_SPACE:#Select current option
-                        if curser[1]==240:#Start game
+                        if cursor[1]==240:#Start game
                             position = [(WINDOWWIDTH/2)+50,(WINDOWHEIGHT/2)-50,0,0,0,0]
                             playerImage, bikeImage = playerGraphics(bikeSelect[0])
                             skids = []
@@ -257,34 +270,34 @@ def menu():
                                 revChannel.play(bikestartSound)
                             option[6]=2
 
-                        if curser[1]==290:#Go to settings page
+                        if cursor[1]==290:#Go to settings page
                             settings[7]=True
                             settingsScreen()
-                        if curser[1]==340:#Go to instructions page
+                        if cursor[1]==340:#Go to instructions page
                             option[8]=600
                             about()
-                        if curser[1]==390:#Quit game
+                        if cursor[1]==390:#Quit game
                             pygame.quit()
                             sys.exit()
                     if event.key == K_RIGHT:#Change bike selected
-                        if curser[1]==190:
+                        if cursor[1]==190:
                             bikeSelect[0] +=1
                             if bikeSelect[0] >4:
                                 bikeSelect[0] = 1
                             playerImage, bikeImage = playerGraphics(bikeSelect[0])
-                        if curser[1]==240:#Change track selected
+                        if cursor[1]==240:#Change track selected
                             drawTrack[0] +=1
                             if drawTrack[0] >9:
                                 drawTrack[0] = 1
                             lapRecord, lapRecord2, lapRecord3, lapRecord4, lapRecord5 = loadRecords(drawTrack)
                             position,limit = scrollLimits(drawTrack)
                     if event.key == K_LEFT:#Change bike selected
-                        if curser[1]==190:
+                        if cursor[1]==190:
                             bikeSelect[0] -=1
                             if bikeSelect[0] <1:
                                 bikeSelect[0] = 4
                             playerImage, bikeImage = playerGraphics(bikeSelect[0])
-                        if curser[1]==240:#Change track selected
+                        if cursor[1]==240:#Change track selected
                             drawTrack[0] -=1
                             if drawTrack[0] <1:
                                 drawTrack[0] = 9
@@ -299,12 +312,12 @@ def menu():
                     if event.key == K_DOWN or event.key == ord('s'):
                         moveDown = False
 
-        # move the Curser
-        if moveDown and curser[1] < 350:
-            curser[1] += MOVESPEED
+        # move the Cursor
+        if moveDown and cursor[1] < 350:
+            cursor[1] += MOVESPEED
             moveDown = False
-        if moveUp and curser[1] > 200:
-            curser[1] -= MOVESPEED
+        if moveUp and cursor[1] > 200:
+            cursor[1] -= MOVESPEED
             moveUp = False
 
         # draw the background onto the surface & draw the banner
@@ -313,25 +326,25 @@ def menu():
         moveScenary()
         drawBanner(gripImage)
 
-        # Output the current curser position
-        if curser[1]==190:
-            curser[2]=265
+        # Output the current cursor position
+        if cursor[1]==190:
+            cursor[2]=265
             option[7]='Press Left / Right to select your motorbike'
-        if curser[1]==240:
-            curser[2]=320
+        if cursor[1]==240:
+            cursor[2]=320
             option[7]='Left / Right to select Track - Enter Start'
-        if curser[1]==290:
-            curser[2]=130
+        if cursor[1]==290:
+            cursor[2]=130
             option[7]='Adjust settings'
-        if curser[1]==340:
-            curser[2]=175
+        if cursor[1]==340:
+            cursor[2]=175
             option[7]='How to play GRIP'
-        if curser[1]==390:
-            curser[2]=75
+        if cursor[1]==390:
+            cursor[2]=75
             option[7]='Quit Game'
 
-        # draw the curser onto the surface
-        pygame.draw.rect(windowSurface, BLACK, (curser[0],curser[1],curser[2],curser[3]),1)
+        # draw the cursor onto the surface
+        pygame.draw.rect(windowSurface, BLACK, (cursor[0],cursor[1],cursor[2],cursor[3]),1)
 
         # draw the options onto the surface
         text1s = guessFont.render(option[1] + ' - Bike ' + str(bikeSelect[0]), True, BLACK,)
@@ -444,65 +457,84 @@ def menu():
         # draw the window onto the screen
         pygame.display.update()
 
+# This function defines the scroll limits based on the selected track.
+# It takes the drawTrack parameter as input and returns the position and limit values.
+# The position list stores the x and y coordinates of the scroll position, as well as other variables.
+# The limit list stores the limits for scrolling in each direction based on the selected track.
+# The values in the limit list are calculated based on the WINDOWWIDTH and WINDOWHEIGHT variables.
+# The drawTrack parameter determines which track is selected and sets the appropriate limits.
+# The function returns the position and limit lists.
 def scrollLimits(drawTrack):
     global WINDOWWIDTH
     global WINDOWHEIGHT
-    position = [(WINDOWWIDTH/2)+50,(WINDOWHEIGHT/2)-50,0,0,0,0]
+    position = [(WINDOWWIDTH/2)+50,(WINDOWHEIGHT/2)-50,0,0,0,0]  # Initialize the position list with x and y coordinates
     if drawTrack[0] == 1:
-        limit = [1,-1950+WINDOWWIDTH,-1450+WINDOWHEIGHT,1750,1350,0,-5]
+        limit = [1,-1950+WINDOWWIDTH,-1450+WINDOWHEIGHT,1750,1350,0,-5]  # Set limits for track 1
     elif drawTrack[0] == 2:
-        limit = [1,-1300+WINDOWWIDTH,-1450+WINDOWHEIGHT,1850,1350,0,-5]
+        limit = [1,-1300+WINDOWWIDTH,-1450+WINDOWHEIGHT,1850,1350,0,-5]  # Set limits for track 2
     elif drawTrack[0] == 3:
-        limit = [1,-1750+WINDOWWIDTH,-1950+WINDOWHEIGHT,1350,150,0,-5]
+        limit = [1,-1750+WINDOWWIDTH,-1950+WINDOWHEIGHT,1350,150,0,-5]  # Set limits for track 3
     elif drawTrack[0] == 4:
-        limit = [1,-3350+WINDOWWIDTH,-2350+WINDOWHEIGHT,750,150,0,-5]
+        limit = [1,-3350+WINDOWWIDTH,-2350+WINDOWHEIGHT,750,150,0,-5]  # Set limits for track 4
     elif drawTrack[0] == 5:
-        limit = [1,-1950+WINDOWWIDTH,-2350+WINDOWHEIGHT,1350,150,0,-5]
+        limit = [1,-1950+WINDOWWIDTH,-2350+WINDOWHEIGHT,1350,150,0,-5]  # Set limits for track 5
     elif drawTrack[0] == 6:
-        limit = [1,-1500+WINDOWWIDTH,-2850+WINDOWHEIGHT,1850,150,0,-5]
+        limit = [1,-1500+WINDOWWIDTH,-2850+WINDOWHEIGHT,1850,150,0,-5]  # Set limits for track 6
     elif drawTrack[0] == 7:
-        limit = [1,-2250+WINDOWWIDTH,-1550+WINDOWHEIGHT,1550,1450,0,-5]
+        limit = [1,-2250+WINDOWWIDTH,-1550+WINDOWHEIGHT,1550,1450,0,-5]  # Set limits for track 7
     elif drawTrack[0] == 8:
-        limit = [1,-4150+WINDOWWIDTH,-2150+WINDOWHEIGHT,1250,900,0,-5]
+        limit = [1,-4150+WINDOWWIDTH,-2150+WINDOWHEIGHT,1250,900,0,-5]  # Set limits for track 8
     else:
-        limit = [1,-1800+WINDOWWIDTH,-3150+WINDOWHEIGHT,1250,600,0,-5]
+        limit = [1,-1800+WINDOWWIDTH,-3150+WINDOWHEIGHT,1250,600,0,-5]  # Set limits for track 9
     return position, limit
 
 
+# This function draws the banner image on the window surface.
+# It takes the gripImage parameter as input, which is the image to be drawn.
+# The function uses the blit() method to draw the image at the specified position.
 def drawBanner(gripImage):
     windowSurface.blit(gripImage, (banner[0],banner[1]))
 
+# This function animates the background.
+# It updates the position of the banner text and background image.
+# The banner text moves to the right until it reaches the window width, then it resets to the initial position.
+# The position list and limit list are used to control the animation.
 def backgroundAnim():
-        if banner[0]<=WINDOWWIDTH:# Animate the banner text and background
-            banner[0]+=1
-        if banner[0]>WINDOWWIDTH:
-            banner[0]=-340
+    if banner[0] <= WINDOWWIDTH:
+        banner[0] += 1
+    if banner[0] > WINDOWWIDTH:
+        banner[0] = -340
 
-        position[limit[5]] = int(position[limit[5]])
+    position[limit[5]] = int(position[limit[5]])
 
-        if position[limit[5]] == limit[limit[0]]:
-            limit[0] += 1
-            if limit[0] > 4:
-                limit[0]=1
-            if limit[5] == 1:
-                limit[5]=0
-            else:
-                limit[5]=1
-            if limit[0] == 1:
-                limit[6]=-5
-            elif limit[0] == 2:
-                limit[6]=-5
-            elif limit[0] == 3:
-                limit[6]=5
-            else:
-                limit[6]=5
+    if position[limit[5]] == limit[limit[0]]:
+        limit[0] += 1
+        if limit[0] > 4:
+            limit[0] = 1
+        if limit[5] == 1:
+            limit[5] = 0
         else:
-            position[limit[5]] += limit[6]
-            position[limit[5]+2] += limit[6]
+            limit[5] = 1
+        if limit[0] == 1:
+            limit[6] = -5
+        elif limit[0] == 2:
+            limit[6] = -5
+        elif limit[0] == 3:
+            limit[6] = 5
+        else:
+            limit[6] = 5
+    else:
+        position[limit[5]] += limit[6]
+        position[limit[5]+2] += limit[6]
 
 
+# This function loads the player graphics based on the selected bike.
+# It takes the bikeSelect parameter as input, which determines the bike to be loaded.
+# The function uses conditional statements to load the appropriate player images and bike image.
+# The player images are stored in a list, and the bike image is returned separately.
 def playerGraphics(bikeSelect):
     if bikeSelect == 1:
+        # Load player images for bike 1
         playerImage1 = pygame.image.load('graphics/bike1-1.png').convert_alpha()
         playerImage2 = pygame.image.load('graphics/bike1-2.png').convert_alpha()
         playerImage3 = pygame.image.load('graphics/bike1-3.png').convert_alpha()
@@ -512,8 +544,10 @@ def playerGraphics(bikeSelect):
         playerImage7 = pygame.image.load('graphics/bike1-7.png').convert_alpha()
         playerImage8 = pygame.image.load('graphics/bike1-8.png').convert_alpha()
         playerImage9 = pygame.image.load('graphics/bike1-9.png').convert_alpha()
+        # Load bike image for bike 1
         bikeImage = pygame.image.load('graphics/bike1.png').convert_alpha()
     elif bikeSelect == 2:
+        # Load player images for bike 2
         playerImage1 = pygame.image.load('graphics/bike2-1.png').convert_alpha()
         playerImage2 = pygame.image.load('graphics/bike2-2.png').convert_alpha()
         playerImage3 = pygame.image.load('graphics/bike2-3.png').convert_alpha()
@@ -523,8 +557,10 @@ def playerGraphics(bikeSelect):
         playerImage7 = pygame.image.load('graphics/bike2-7.png').convert_alpha()
         playerImage8 = pygame.image.load('graphics/bike2-8.png').convert_alpha()
         playerImage9 = pygame.image.load('graphics/bike2-9.png').convert_alpha()
+        # Load bike image for bike 2
         bikeImage = pygame.image.load('graphics/bike2.png').convert_alpha()
     elif bikeSelect == 3:
+        # Load player images for bike 3
         playerImage1 = pygame.image.load('graphics/bike3-1.png').convert_alpha()
         playerImage2 = pygame.image.load('graphics/bike3-2.png').convert_alpha()
         playerImage3 = pygame.image.load('graphics/bike3-3.png').convert_alpha()
@@ -534,8 +570,10 @@ def playerGraphics(bikeSelect):
         playerImage7 = pygame.image.load('graphics/bike3-7.png').convert_alpha()
         playerImage8 = pygame.image.load('graphics/bike3-8.png').convert_alpha()
         playerImage9 = pygame.image.load('graphics/bike3-9.png').convert_alpha()
+        # Load bike image for bike 3
         bikeImage = pygame.image.load('graphics/bike3.png').convert_alpha()
     else:
+        # Load player images for bike 4
         playerImage1 = pygame.image.load('graphics/bike4-1.png').convert_alpha()
         playerImage2 = pygame.image.load('graphics/bike4-2.png').convert_alpha()
         playerImage3 = pygame.image.load('graphics/bike4-3.png').convert_alpha()
@@ -545,62 +583,80 @@ def playerGraphics(bikeSelect):
         playerImage7 = pygame.image.load('graphics/bike4-7.png').convert_alpha()
         playerImage8 = pygame.image.load('graphics/bike4-8.png').convert_alpha()
         playerImage9 = pygame.image.load('graphics/bike4-9.png').convert_alpha()
+        # Load bike image for bike 4
         bikeImage = pygame.image.load('graphics/bike4.png').convert_alpha()
-    playerImage = [5,playerImage1,playerImage2,playerImage3,playerImage4,playerImage5,playerImage6,playerImage7,playerImage8,playerImage9]
+    # Store player images in a list
+    playerImage = [5, playerImage1, playerImage2, playerImage3, playerImage4, playerImage5, playerImage6, playerImage7, playerImage8, playerImage9]
     return playerImage, bikeImage
 
+# This function loads the shadow graphics.
+# It loads a series of shadow images and stores them in a list.
+# The shadow images are used to create a shadow effect for the player.
 def shadowGraphics():
-    shadowImage1 = pygame.image.load('graphics/shadow1.png').convert_alpha()
-    shadowImage2 = pygame.image.load('graphics/shadow2.png').convert_alpha()
-    shadowImage3 = pygame.image.load('graphics/shadow3.png').convert_alpha()
-    shadowImage4 = pygame.image.load('graphics/shadow4.png').convert_alpha()
-    shadowImage5 = pygame.image.load('graphics/shadow5.png').convert_alpha()
-    shadowImage6 = pygame.image.load('graphics/shadow6.png').convert_alpha()
-    shadowImage7 = pygame.image.load('graphics/shadow7.png').convert_alpha()
-    shadowImage8 = pygame.image.load('graphics/shadow8.png').convert_alpha()
-    shadowImage9 = pygame.image.load('graphics/shadow9.png').convert_alpha()
-    shadowImage = [5,shadowImage1,shadowImage2,shadowImage3,shadowImage4,shadowImage5,shadowImage6,shadowImage7,shadowImage8,shadowImage9]
+    shadowImage1 = pygame.image.load('graphics/shadow1.png').convert_alpha()  # Load shadow image 1
+    shadowImage2 = pygame.image.load('graphics/shadow2.png').convert_alpha()  # Load shadow image 2
+    shadowImage3 = pygame.image.load('graphics/shadow3.png').convert_alpha()  # Load shadow image 3
+    shadowImage4 = pygame.image.load('graphics/shadow4.png').convert_alpha()  # Load shadow image 4
+    shadowImage5 = pygame.image.load('graphics/shadow5.png').convert_alpha()  # Load shadow image 5
+    shadowImage6 = pygame.image.load('graphics/shadow6.png').convert_alpha()  # Load shadow image 6
+    shadowImage7 = pygame.image.load('graphics/shadow7.png').convert_alpha()  # Load shadow image 7
+    shadowImage8 = pygame.image.load('graphics/shadow8.png').convert_alpha()  # Load shadow image 8
+    shadowImage9 = pygame.image.load('graphics/shadow9.png').convert_alpha()  # Load shadow image 9
+    shadowImage = [5, shadowImage1, shadowImage2, shadowImage3, shadowImage4, shadowImage5, shadowImage6, shadowImage7, shadowImage8, shadowImage9]  # Store shadow images in a list
     return shadowImage
 
+# This function loads the ghost graphics.
+# It loads a series of ghost images and stores them in a list.
+# The ghost images are used to display the ghost player.
 def ghostGraphics():
-    ghostImage1 = pygame.image.load('graphics/ghost1.png').convert_alpha()
-    ghostImage2 = pygame.image.load('graphics/ghost2.png').convert_alpha()
-    ghostImage3 = pygame.image.load('graphics/ghost3.png').convert_alpha()
-    ghostImage4 = pygame.image.load('graphics/ghost4.png').convert_alpha()
-    ghostImage5 = pygame.image.load('graphics/ghost5.png').convert_alpha()
-    ghostImage6 = pygame.image.load('graphics/ghost6.png').convert_alpha()
-    ghostImage7 = pygame.image.load('graphics/ghost7.png').convert_alpha()
-    ghostImage8 = pygame.image.load('graphics/ghost8.png').convert_alpha()
-    ghostImage9 = pygame.image.load('graphics/ghost9.png').convert_alpha()
-    ghostImage = [5,ghostImage1,ghostImage2,ghostImage3,ghostImage4,ghostImage5,ghostImage6,ghostImage7,ghostImage8,ghostImage9]
+    ghostImage1 = pygame.image.load('graphics/ghost1.png').convert_alpha()  # Load ghost image 1
+    ghostImage2 = pygame.image.load('graphics/ghost2.png').convert_alpha()  # Load ghost image 2
+    ghostImage3 = pygame.image.load('graphics/ghost3.png').convert_alpha()  # Load ghost image 3
+    ghostImage4 = pygame.image.load('graphics/ghost4.png').convert_alpha()  # Load ghost image 4
+    ghostImage5 = pygame.image.load('graphics/ghost5.png').convert_alpha()  # Load ghost image 5
+    ghostImage6 = pygame.image.load('graphics/ghost6.png').convert_alpha()  # Load ghost image 6
+    ghostImage7 = pygame.image.load('graphics/ghost7.png').convert_alpha()  # Load ghost image 7
+    ghostImage8 = pygame.image.load('graphics/ghost8.png').convert_alpha()  # Load ghost image 8
+    ghostImage9 = pygame.image.load('graphics/ghost9.png').convert_alpha()  # Load ghost image 9
+    ghostImage = [5, ghostImage1, ghostImage2, ghostImage3, ghostImage4, ghostImage5, ghostImage6, ghostImage7, ghostImage8, ghostImage9]  # Store ghost images in a list
     return ghostImage
 
+# This function loads the preview images for each track.
+# It loads a series of track images and stores them in a list.
+# The track images are used to display a preview of each track.
 def previewImage():
-    previewImage1 = pygame.image.load('graphics/track1.png').convert_alpha()
-    previewImage2 = pygame.image.load('graphics/track2.png').convert_alpha()
-    previewImage3 = pygame.image.load('graphics/track3.png').convert_alpha()
-    previewImage4 = pygame.image.load('graphics/track4.png').convert_alpha()
-    previewImage5 = pygame.image.load('graphics/track5.png').convert_alpha()
-    previewImage6 = pygame.image.load('graphics/track6.png').convert_alpha()
-    previewImage7 = pygame.image.load('graphics/track7.png').convert_alpha()
-    previewImage8 = pygame.image.load('graphics/track8.png').convert_alpha()
-    previewImage9 = pygame.image.load('graphics/track9.png').convert_alpha()
-    previewImage = [1,previewImage1,previewImage2,previewImage3,previewImage4,previewImage5,previewImage6,previewImage7,previewImage8,previewImage9]
+    previewImage1 = pygame.image.load('graphics/track1.png').convert_alpha()  # Load track image 1
+    previewImage2 = pygame.image.load('graphics/track2.png').convert_alpha()  # Load track image 2
+    previewImage3 = pygame.image.load('graphics/track3.png').convert_alpha()  # Load track image 3
+    previewImage4 = pygame.image.load('graphics/track4.png').convert_alpha()  # Load track image 4
+    previewImage5 = pygame.image.load('graphics/track5.png').convert_alpha()  # Load track image 5
+    previewImage6 = pygame.image.load('graphics/track6.png').convert_alpha()  # Load track image 6
+    previewImage7 = pygame.image.load('graphics/track7.png').convert_alpha()  # Load track image 7
+    previewImage8 = pygame.image.load('graphics/track8.png').convert_alpha()  # Load track image 8
+    previewImage9 = pygame.image.load('graphics/track9.png').convert_alpha()  # Load track image 9
+    previewImage = [1, previewImage1, previewImage2, previewImage3, previewImage4, previewImage5, previewImage6, previewImage7, previewImage8, previewImage9]  # Store track images in a list
     return previewImage
 
 def bikeStats(bikeSelect):
+    # Draw rectangles for bike stats
     pygame.draw.rect(windowSurface, BLACK,(600,240, 45,-62),1)
     pygame.draw.rect(windowSurface, BLACK,(650,240, 45,-62),1)
     pygame.draw.rect(windowSurface, BLACK,(700,240, 45,-62),1)
     pygame.draw.rect(windowSurface, BLACK,(750,240, 45,-62),1)
+    
+    # Draw bars for bike stats
     pygame.draw.rect(windowSurface, LBLUE,(601,239, 43,-bikeSelect[bikeSelect[0]][2]*5))
     pygame.draw.rect(windowSurface, RED,(651,239, 43,-bikeSelect[bikeSelect[0]][3]*3))
     pygame.draw.rect(windowSurface, BLUE,(701,239, 43,-bikeSelect[bikeSelect[0]][0]*2.5))
     pygame.draw.rect(windowSurface, BGREEN,(751,239, 43,-bikeSelect[bikeSelect[0]][7]/2))
+    
+    # Render text labels for bike stats
     accelText = smallFont.render('Accel', True, WHITE,)
     brakeText = smallFont.render('Brake', True, WHITE,)
     speedText = smallFont.render('Speed', True, WHITE,)
     boostText = smallFont.render('Boost', True, WHITE,)
+    
+    # Blit text labels onto the window surface
     windowSurface.blit(accelText, (604,228))
     windowSurface.blit(brakeText, (651,228))
     windowSurface.blit(speedText, (701,228))
@@ -614,112 +670,109 @@ def settingsScreen():
     global WINDOWWIDTH
     global WINDOWHEIGHT
     global sound
-    WINDOWWIDTH = width[show[1]]
-    WINDOWHEIGHT = height[show[1]]
+    WINDOWWIDTH = width[show[1]]  # Set WINDOWWIDTH based on show[1]
+    WINDOWHEIGHT = height[show[1]]  # Set WINDOWHEIGHT based on show[1]
     while settings[7]:
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
             if event.type == KEYDOWN:
-                    # change the keyboard variables
-                    if event.key == K_UP or event.key == ord('w'):#Curser Up
-                        moveDown = False
-                        moveUp = True
-                    if event.key == K_DOWN or event.key == ord('s'):#Curser Down
-                        moveUp = False
-                        moveDown = True
-                    if event.key == K_RIGHT:#Select current option
-                        if curser[1]==190:
-                            detail[0] +=1
-                            if detail[0] >3:
-                                detail[0] = 1
-                        if curser[1]==290:
-                            show[1] +=1
-                            if show[1] >5:
-                                show[1] = 0
-                            WINDOWWIDTH = width[show[1]]
-                            WINDOWHEIGHT = height[show[1]]
-                    if event.key == K_LEFT:#Select current option
-                        if curser[1]==190:
-                            detail[0] -=1
-                            if detail[0] <1:
-                                detail[0] = 3
-                        if curser[1]==290:
-                            show[1] -=1
-                            if show[1] <0:
-                                show[1] = 5
-                            WINDOWWIDTH = width[show[1]]
-                            WINDOWHEIGHT = height[show[1]]
-                    if event.key == K_RETURN or event.key == K_SPACE:#
-                        if curser[1] == 140:
-                            if sound:
-                                sound = False
-                                settings[5] = 'Sound Off'
-                            else:
-                                sound = True
-                                settings[5] = 'Sound On'
-                        if curser[1] == 240:
-                            if fps[0] == 1:
-                                fps[0] = 0
-                            else:
-                                fps[0] = 1
-                        if curser[1] == 290:
-                            setDisplay(WINDOWWIDTH,WINDOWHEIGHT)
-                        if curser[1] == 340:
-                            if show[0]==0:
-                                show[0]=FULLSCREEN
-                                screen = pygame.display.get_surface()
-                                tmp = screen.convert()
-                                WINDOWWIDTH,WINDOWHEIGHT = screen.get_width(),screen.get_height()
-                            else:
-                                show[0]=0
-                            setDisplay(WINDOWWIDTH,WINDOWHEIGHT)
-                        if detail[0] == 1:
-                            detail[1] = 100000
-                        elif detail[0] == 2:
-                            detail[1] = 1
-                            detail[2] = 0
-                        elif detail[0] == 3:
-                            detail[1] = 0
-                            detail[2] = 0
-                        if curser[1] == 390:
-                            settings[7]=False
-                            menu()
+                if event.key == K_UP or event.key == ord('w'):  # Move cursor up
+                    moveDown = False
+                    moveUp = True
+                if event.key == K_DOWN or event.key == ord('s'):  # Move cursor down
+                    moveUp = False
+                    moveDown = True
+                if event.key == K_RIGHT:  # Select current option
+                    if cursor[1] == 190:
+                        detail[0] += 1
+                        if detail[0] > 3:
+                            detail[0] = 1
+                    if cursor[1] == 290:
+                        show[1] += 1
+                        if show[1] > 5:
+                            show[1] = 0
+                        WINDOWWIDTH = width[show[1]]  # Update WINDOWWIDTH based on show[1]
+                        WINDOWHEIGHT = height[show[1]]  # Update WINDOWHEIGHT based on show[1]
+                if event.key == K_LEFT:  # Select current option
+                    if cursor[1] == 190:
+                        detail[0] -= 1
+                        if detail[0] < 1:
+                            detail[0] = 3
+                    if cursor[1] == 290:
+                        show[1] -= 1
+                        if show[1] < 0:
+                            show[1] = 5
+                        WINDOWWIDTH = width[show[1]]  # Update WINDOWWIDTH based on show[1]
+                        WINDOWHEIGHT = height[show[1]]  # Update WINDOWHEIGHT based on show[1]
+                if event.key == K_RETURN or event.key == K_SPACE:
+                    if cursor[1] == 140:  # Enable/Disable sound
+                        if sound:
+                            sound = False
+                            settings[5] = 'Sound Off'
+                        else:
+                            sound = True
+                            settings[5] = 'Sound On'
+                    if cursor[1] == 240:  # Enable/Disable FPS display
+                        if fps[0] == 1:
+                            fps[0] = 0
+                        else:
+                            fps[0] = 1
+                    if cursor[1] == 290:  # Adjust window size
+                        setDisplay(WINDOWWIDTH, WINDOWHEIGHT)
+                    if cursor[1] == 340:  # Enable/Disable fullscreen
+                        if show[0] == 0:
+                            show[0] = FULLSCREEN
+                            screen = pygame.display.get_surface()
+                            tmp = screen.convert()
+                            WINDOWWIDTH, WINDOWHEIGHT = screen.get_width(), screen.get_height()
+                        else:
+                            show[0] = 0
+                        setDisplay(WINDOWWIDTH, WINDOWHEIGHT)
+                    if detail[0] == 1:  # Set track detail
+                        detail[1] = 100000
+                    elif detail[0] == 2:
+                        detail[1] = 1
+                        detail[2] = 0
+                    elif detail[0] == 3:
+                        detail[1] = 0
+                        detail[2] = 0
+                    if cursor[1] == 390:  # Exit settings
+                        settings[7] = False
+                        menu()
 
-            # move the Curser
-        if moveDown and curser[1] < 350:
-                curser[1] += MOVESPEED
-                moveDown = False
-        if moveUp and curser[1] > 150:
-                curser[1] -= MOVESPEED
-                moveUp = False
+        if moveDown and cursor[1] < 350:  # Move cursor down
+            cursor[1] += MOVESPEED
+            moveDown = False
+        if moveUp and cursor[1] > 150:  # Move cursor up
+            cursor[1] -= MOVESPEED
+            moveUp = False
 
         drawBack()
         moveTrack()
         moveScenary()
         drawBanner(gripImage)
 
-        if curser[1]==140:
-                curser[2]=140
-                option[7]='Press Enter to Enable / Disable Sound'
-        if curser[1]==190:
-                curser[2]=len(settings[1]*17)
-                option[7]='Press Left / Right to change track detail'
-        if curser[1]==240:
-                curser[2]=145
-                option[7]='Press Enter to enable FPS display'
-        if curser[1]==290:
-                curser[2]=len(settings[1]*17)+len(str(width[show[1]])*17)+len(str(height[show[1]])*17)
-                option[7]='Press Left / Right to adjust size - Enter Select'
-        if curser[1]==340:
-                curser[2]=235
-                option[7]='Press Enter to enable fullscreen'
-        if curser[1]==390:
-                curser[2]=70
-                option[7]='Exit Settings'
+        if cursor[1] == 140:
+            cursor[2] = 140
+            option[7] = 'Press Enter to Enable / Disable Sound'
+        if cursor[1] == 190:
+            cursor[2] = len(settings[1] * 17)
+            option[7] = 'Press Left / Right to change track detail'
+        if cursor[1] == 240:
+            cursor[2] = 145
+            option[7] = 'Press Enter to enable FPS display'
+        if cursor[1] == 290:
+            cursor[2] = len(settings[1] * 17) + len(str(width[show[1]]) * 17) + len(str(height[show[1]]) * 17)
+            option[7] = 'Press Left / Right to adjust size - Enter Select'
+        if cursor[1] == 340:
+            cursor[2] = 235
+            option[7] = 'Press Enter to enable fullscreen'
+        if cursor[1] == 390:
+            cursor[2] = 70
+            option[7] = 'Exit Settings'
 
-        # blit the options onto the screen
         text1s = guessFont.render(settings[1] + ' - ' + str(detail[0]), True, BLACK,)
         text1 = guessFont.render(settings[1] + ' - ' + str(detail[0]), True, WHITE,)
         text2s = guessFont.render(settings[2], True, BLACK,)
@@ -735,49 +788,51 @@ def settingsScreen():
         text7s = basicFont.render(option[7], True, BLACK,)
         text7 = basicFont.render(option[7], True, WHITE,)
 
-        windowSurface.blit(text6s, (50,150))
-        windowSurface.blit(text6, (52,152))
-        windowSurface.blit(text1s, (50,200))
-        windowSurface.blit(text1, (52,202))
-        windowSurface.blit(text2s, (50,250))
-        windowSurface.blit(text2, (52,252))
-        windowSurface.blit(text3s, (50,300))
-        windowSurface.blit(text3, (52,302))
-        windowSurface.blit(text4s, (50,350))
-        windowSurface.blit(text4, (52,352))
-        windowSurface.blit(text5s, (50,400))
-        windowSurface.blit(text5, (51,402))
-        windowSurface.blit(text7s, (50,450))
-        windowSurface.blit(text7, (51,451))
+        windowSurface.blit(text6s, (50, 150))
+        windowSurface.blit(text6, (52, 152))
+        windowSurface.blit(text1s, (50, 200))
+        windowSurface.blit(text1, (52, 202))
+        windowSurface.blit(text2s, (50, 250))
+        windowSurface.blit(text2, (52, 252))
+        windowSurface.blit(text3s, (50, 300))
+        windowSurface.blit(text3, (52, 302))
+        windowSurface.blit(text4s, (50, 350))
+        windowSurface.blit(text4, (52, 352))
+        windowSurface.blit(text5s, (50, 400))
+        windowSurface.blit(text5, (51, 402))
+        windowSurface.blit(text7s, (50, 450))
+        windowSurface.blit(text7, (51, 451))
 
-        # draw the curser onto the surface
-        pygame.draw.rect(windowSurface, BLACK, (curser[0],curser[1],curser[2],curser[3]),1)
+        pygame.draw.rect(windowSurface, BLACK, (cursor[0], cursor[1], cursor[2], cursor[3]), 1)  # Draw cursor
 
         backgroundAnim()
         framerate()
         pygame.display.update()
 
+# Function to display the about screen
 def about():
-    while option[8]>=0:
+    while option[8] >= 0:
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
             if event.type == KEYDOWN:
-                if event.key == K_RETURN or event.key == K_SPACE:#Return to main menu
-                    option[8]=0
+                if event.key == K_RETURN or event.key == K_SPACE:  # Return to main menu
+                    option[8] = 0
 
-        drawBack()
-        moveTrack()
-        moveScenary()
-        drawBanner(gripImage)
+        drawBack()  # Draw the background
+        moveTrack()  # Move the track
+        moveScenary()  # Move the scenery
+        drawBanner(gripImage)  # Draw the banner image
+
+        # Render and display the text on the screen
         text1s = guessFont.render('W = Accelerate - S = Brake', True, BLACK,)
         text1 = guessFont.render('W = Accelerate - S = Brake', True, WHITE,)
         text2s = guessFont.render('Left & Right Arrow keys = Steering', True, BLACK,)
         text2 = guessFont.render('Left & Right Arrow keys = Steering', True, WHITE,)
         text3s = guessFont.render('Up Arrow key = Boost', True, BLACK,)
         text3 = guessFont.render('Up Arrow key = Boost', True, WHITE,)
-        text4s = guessFont.render('Try to beat the lap record without cutting corners!' , True, BLACK,)
+        text4s = guessFont.render('Try to beat the lap record without cutting corners!', True, BLACK,)
         text4 = guessFont.render('Try to beat the lap record without cutting corners!', True, WHITE,)
         text5s = guessFont.render('0.5 seconds on the grass invalidates the lap', True, BLACK,)
         text5 = guessFont.render('0.5 seconds on the grass invalidates the lap', True, WHITE,)
@@ -785,29 +840,32 @@ def about():
         text6 = guessFont.render('Make sure you cross the white sector timing lines', True, WHITE,)
         text7s = guessFont.render('You have ten laps to beat the time!', True, BLACK,)
         text7 = guessFont.render('You have ten laps to beat the time!', True, WHITE,)
-        windowSurface.blit(text1s, (30,150))
-        windowSurface.blit(text1, (32,152))
-        windowSurface.blit(text2s, (30,200))
-        windowSurface.blit(text2, (32,202))
-        windowSurface.blit(text3s, (30,250))
-        windowSurface.blit(text3, (32,252))
-        windowSurface.blit(text4s, (30,300))
-        windowSurface.blit(text4, (32,302))
-        windowSurface.blit(text5s, (30,350))
-        windowSurface.blit(text5, (32,352))
-        windowSurface.blit(text6s, (30,400))
-        windowSurface.blit(text6, (32,402))
-        windowSurface.blit(text7s, (30,450))
-        windowSurface.blit(text7, (32,452))
-        backgroundAnim()
-        option[8]-=1
-        timer=int(option[8]/40)
+
+        windowSurface.blit(text1s, (30, 150))  # Blit the text on the window surface
+        windowSurface.blit(text1, (32, 152))
+        windowSurface.blit(text2s, (30, 200))
+        windowSurface.blit(text2, (32, 202))
+        windowSurface.blit(text3s, (30, 250))
+        windowSurface.blit(text3, (32, 252))
+        windowSurface.blit(text4s, (30, 300))
+        windowSurface.blit(text4, (32, 302))
+        windowSurface.blit(text5s, (30, 350))
+        windowSurface.blit(text5, (32, 352))
+        windowSurface.blit(text6s, (30, 400))
+        windowSurface.blit(text6, (32, 402))
+        windowSurface.blit(text7s, (30, 450))
+        windowSurface.blit(text7, (32, 452))
+
+        backgroundAnim()  # Animate the background
+        option[8] -= 1
+        timer = int(option[8] / 40)
         text8s = guessFont.render(str(timer), True, BLACK,)
         text8 = guessFont.render(str(timer), True, WHITE,)
-        windowSurface.blit(text8s, (769,9))
-        windowSurface.blit(text8, (770,10))
-        framerate()
-        pygame.display.update()
+        windowSurface.blit(text8s, (769, 9))
+        windowSurface.blit(text8, (770, 10))
+
+        framerate()  # Adjust the framerate
+        pygame.display.update()  # Update the display
 
 def displayLaptimes():
     while option[8]>0:
@@ -1302,6 +1360,7 @@ def moveTrack():
 def moveScenary():
     if drawTrack[0] == 1:
         if detail[0] == 3:
+            # Blit scenaryImage1 at specific positions
             windowSurface.blit(scenaryImage1,(position[0]+1250,position[1]+420))
             windowSurface.blit(scenaryImage1,(position[0]+1260,position[1]+280))
             windowSurface.blit(scenaryImage1,(position[0]+1245,position[1]+180))
@@ -1315,133 +1374,154 @@ def moveScenary():
 def drawBack():
     if detail[0] == 3:
         if position[2] >= 200:
-            position[2] -=200
+            position[2] -= 200  # Move position horizontally
         if position[2] <= -200:
-            position[2] += 200
+            position[2] += 200  # Move position horizontally
         if position[3] >= 200:
-            position[3] -= 200
+            position[3] -= 200  # Move position vertically
         if position[3] <= -200:
-            position[3] += 200
-        windowSurface.blit(overheadImage,(position[2]+1200,position[3]-200))
-        windowSurface.blit(overheadImage,(position[2]+1000,position[3]-200))
-        windowSurface.blit(overheadImage,(position[2]+800,position[3]-200))
-        windowSurface.blit(overheadImage,(position[2]+600,position[3]-200))
-        windowSurface.blit(overheadImage,(position[2]+400,position[3]-200))
-        windowSurface.blit(overheadImage,(position[2]+200,position[3]-200))
-        windowSurface.blit(overheadImage,(position[2],position[3]-200))
-        windowSurface.blit(overheadImage,(position[2]-200,position[3]-200))
-        windowSurface.blit(overheadImage,(position[2]+1200,position[3]))
-        windowSurface.blit(overheadImage,(position[2]+1000,position[3]))
-        windowSurface.blit(overheadImage,(position[2]+800,position[3]))
-        windowSurface.blit(overheadImage,(position[2]+600,position[3]))
-        windowSurface.blit(overheadImage,(position[2]+400,position[3]))
-        windowSurface.blit(overheadImage,(position[2]+200,position[3]))
-        windowSurface.blit(overheadImage,(position[2],position[3]))
-        windowSurface.blit(overheadImage,(position[2]-200,position[3]))
-        windowSurface.blit(overheadImage,(position[2]+1200,position[3]+200))
-        windowSurface.blit(overheadImage,(position[2]+1000,position[3]+200))
-        windowSurface.blit(overheadImage,(position[2]+800,position[3]+200))
-        windowSurface.blit(overheadImage,(position[2]+600,position[3]+200))
-        windowSurface.blit(overheadImage,(position[2]+400,position[3]+200))
-        windowSurface.blit(overheadImage,(position[2]+200,position[3]+200))
-        windowSurface.blit(overheadImage,(position[2],position[3]+200))
-        windowSurface.blit(overheadImage,(position[2]-200,position[3]+200))
-        windowSurface.blit(overheadImage,(position[2]+1200,position[3]+400))
-        windowSurface.blit(overheadImage,(position[2]+1000,position[3]+400))
-        windowSurface.blit(overheadImage,(position[2]+800,position[3]+400))
-        windowSurface.blit(overheadImage,(position[2]+600,position[3]+400))
-        windowSurface.blit(overheadImage,(position[2]+400,position[3]+400))
-        windowSurface.blit(overheadImage,(position[2]+200,position[3]+400))
-        windowSurface.blit(overheadImage,(position[2],position[3]+400))
-        windowSurface.blit(overheadImage,(position[2]-200,position[3]+400))
-        windowSurface.blit(overheadImage,(position[2]+1200,position[3]+600))
-        windowSurface.blit(overheadImage,(position[2]+1000,position[3]+600))
-        windowSurface.blit(overheadImage,(position[2]+800,position[3]+600))
-        windowSurface.blit(overheadImage,(position[2]+600,position[3]+600))
-        windowSurface.blit(overheadImage,(position[2]+400,position[3]+600))
-        windowSurface.blit(overheadImage,(position[2]+200,position[3]+600))
-        windowSurface.blit(overheadImage,(position[2],position[3]+600))
-        windowSurface.blit(overheadImage,(position[2]-200,position[3]+600))
+            position[3] += 200  # Move position vertically
+        
+        # Draw overhead images at specific positions
+        windowSurface.blit(overheadImage, (position[2]+1200, position[3]-200))
+        windowSurface.blit(overheadImage, (position[2]+1000, position[3]-200))
+        windowSurface.blit(overheadImage, (position[2]+800, position[3]-200))
+        windowSurface.blit(overheadImage, (position[2]+600, position[3]-200))
+        windowSurface.blit(overheadImage, (position[2]+400, position[3]-200))
+        windowSurface.blit(overheadImage, (position[2]+200, position[3]-200))
+        windowSurface.blit(overheadImage, (position[2], position[3]-200))
+        windowSurface.blit(overheadImage, (position[2]-200, position[3]-200))
+        windowSurface.blit(overheadImage, (position[2]+1200, position[3]))
+        windowSurface.blit(overheadImage, (position[2]+1000, position[3]))
+        windowSurface.blit(overheadImage, (position[2]+800, position[3]))
+        windowSurface.blit(overheadImage, (position[2]+600, position[3]))
+        windowSurface.blit(overheadImage, (position[2]+400, position[3]))
+        windowSurface.blit(overheadImage, (position[2]+200, position[3]))
+        windowSurface.blit(overheadImage, (position[2], position[3]))
+        windowSurface.blit(overheadImage, (position[2]-200, position[3]))
+        windowSurface.blit(overheadImage, (position[2]+1200, position[3]+200))
+        windowSurface.blit(overheadImage, (position[2]+1000, position[3]+200))
+        windowSurface.blit(overheadImage, (position[2]+800, position[3]+200))
+        windowSurface.blit(overheadImage, (position[2]+600, position[3]+200))
+        windowSurface.blit(overheadImage, (position[2]+400, position[3]+200))
+        windowSurface.blit(overheadImage, (position[2]+200, position[3]+200))
+        windowSurface.blit(overheadImage, (position[2], position[3]+200))
+        windowSurface.blit(overheadImage, (position[2]-200, position[3]+200))
+        windowSurface.blit(overheadImage, (position[2]+1200, position[3]+400))
+        windowSurface.blit(overheadImage, (position[2]+1000, position[3]+400))
+        windowSurface.blit(overheadImage, (position[2]+800, position[3]+400))
+        windowSurface.blit(overheadImage, (position[2]+600, position[3]+400))
+        windowSurface.blit(overheadImage, (position[2]+400, position[3]+400))
+        windowSurface.blit(overheadImage, (position[2]+200, position[3]+400))
+        windowSurface.blit(overheadImage, (position[2], position[3]+400))
+        windowSurface.blit(overheadImage, (position[2]-200, position[3]+400))
+        windowSurface.blit(overheadImage, (position[2]+1200, position[3]+600))
+        windowSurface.blit(overheadImage, (position[2]+1000, position[3]+600))
+        windowSurface.blit(overheadImage, (position[2]+800, position[3]+600))
+        windowSurface.blit(overheadImage, (position[2]+600, position[3]+600))
+        windowSurface.blit(overheadImage, (position[2]+400, position[3]+600))
+        windowSurface.blit(overheadImage, (position[2]+200, position[3]+600))
+        windowSurface.blit(overheadImage, (position[2], position[3]+600))
+        windowSurface.blit(overheadImage, (position[2]-200, position[3]+600))
+        
         if WINDOWHEIGHT > 600:
-            windowSurface.blit(overheadImage,(position[2]+1200,position[3]+800))
-            windowSurface.blit(overheadImage,(position[2]+1000,position[3]+800))
-            windowSurface.blit(overheadImage,(position[2]+800,position[3]+800))
-            windowSurface.blit(overheadImage,(position[2]+600,position[3]+800))
-            windowSurface.blit(overheadImage,(position[2]+400,position[3]+800))
-            windowSurface.blit(overheadImage,(position[2]+200,position[3]+800))
-            windowSurface.blit(overheadImage,(position[2],position[3]+800))
-            windowSurface.blit(overheadImage,(position[2]-200,position[3]+800))
+            windowSurface.blit(overheadImage, (position[2]+1200, position[3]+800))
+            windowSurface.blit(overheadImage, (position[2]+1000, position[3]+800))
+            windowSurface.blit(overheadImage, (position[2]+800, position[3]+800))
+            windowSurface.blit(overheadImage, (position[2]+600, position[3]+800))
+            windowSurface.blit(overheadImage, (position[2]+400, position[3]+800))
+            windowSurface.blit(overheadImage, (position[2]+200, position[3]+800))
+            windowSurface.blit(overheadImage, (position[2], position[3]+800))
+            windowSurface.blit(overheadImage, (position[2]-200, position[3]+800))
+        
         if WINDOWHEIGHT > 800:
-            windowSurface.blit(overheadImage,(position[2]+1200,position[3]+1000))
-            windowSurface.blit(overheadImage,(position[2]+1000,position[3]+1000))
-            windowSurface.blit(overheadImage,(position[2]+800,position[3]+1000))
-            windowSurface.blit(overheadImage,(position[2]+600,position[3]+1000))
-            windowSurface.blit(overheadImage,(position[2]+400,position[3]+1000))
-            windowSurface.blit(overheadImage,(position[2]+200,position[3]+1000))
-            windowSurface.blit(overheadImage,(position[2],position[3]+1000))
-            windowSurface.blit(overheadImage,(position[2]-200,position[3]+1000))
+            windowSurface.blit(overheadImage, (position[2]+1200, position[3]+1000))
+            windowSurface.blit(overheadImage, (position[2]+1000, position[3]+1000))
+            windowSurface.blit(overheadImage, (position[2]+800, position[3]+1000))
+            windowSurface.blit(overheadImage, (position[2]+600, position[3]+1000))
+            windowSurface.blit(overheadImage, (position[2]+400, position[3]+1000))
+            windowSurface.blit(overheadImage, (position[2]+200, position[3]+1000))
+            windowSurface.blit(overheadImage, (position[2], position[3]+1000))
+            windowSurface.blit(overheadImage, (position[2]-200, position[3]+1000))
+        
         if WINDOWWIDTH > 1000:
-            windowSurface.blit(overheadImage,(position[2]+1400,position[3]-200))
-            windowSurface.blit(overheadImage,(position[2]+1400,position[3]))
-            windowSurface.blit(overheadImage,(position[2]+1400,position[3]+200))
-            windowSurface.blit(overheadImage,(position[2]+1400,position[3]+400))
-            windowSurface.blit(overheadImage,(position[2]+1400,position[3]+600))
-            windowSurface.blit(overheadImage,(position[2]+1400,position[3]+800))
-            windowSurface.blit(overheadImage,(position[2]+1400,position[3]+1000))
+            windowSurface.blit(overheadImage, (position[2]+1400, position[3]-200))
+            windowSurface.blit(overheadImage, (position[2]+1400, position[3]))
+            windowSurface.blit(overheadImage, (position[2]+1400, position[3]+200))
+            windowSurface.blit(overheadImage, (position[2]+1400, position[3]+400))
+            windowSurface.blit(overheadImage, (position[2]+1400, position[3]+600))
+            windowSurface.blit(overheadImage, (position[2]+1400, position[3]+800))
+            windowSurface.blit(overheadImage, (position[2]+1400, position[3]+1000))
     else:
         windowSurface.fill(GREEN)
-
-def rotation(image,imageNo,where,degree):
-    # Calculate rotated graphics & centre position
-    surf =  pygame.Surface((100,50))
-    rotatedImage = pygame.transform.rotate(image[imageNo],degree)
+        
+def rotation(image, imageNo, where, degree):
+    # Create a surface with fixed dimensions for rotation
+    surf = pygame.Surface((100, 50))
+    # Rotate the specified image by the given degree
+    rotatedImage = pygame.transform.rotate(image[imageNo], degree)
+    # Blit the surface at the specified position
     blittedRect = windowSurface.blit(surf, where)
+    # Get the center position of the blitted surface
     oldCenter = blittedRect.center
-    rotatedSurf =  pygame.transform.rotate(surf, degree)
+    # Rotate the surface itself
+    rotatedSurf = pygame.transform.rotate(surf, degree)
+    # Get the rectangle of the rotated surface
     rotRect = rotatedSurf.get_rect()
+    # Set the center of the rotated rectangle to the old center position
     rotRect.center = oldCenter
     return rotatedImage, rotRect, oldCenter
 
-def skidmarks(skid,colour):
+# This function draws skidmarks on the window surface.
+# It takes the skid and colour parameters as input.
+# The function calculates the original and new positions of the skidmarks based on the player's position.
+# If the original position is within the window boundaries, it draws a line between the original and new positions.
+def skidmarks(skid, colour):
     global position
-    originalH = (position[0]-skid[2])+WINDOWWIDTH/2
-    originalV = (position[1]-skid[3])+(WINDOWHEIGHT/2)+18
-    newH = (position[0]-skid[0])+WINDOWWIDTH/2
-    newV = (position[1]-skid[1])+(WINDOWHEIGHT/2)+18
-    if originalH >= -50 and originalH <= WINDOWWIDTH+50 and originalV >= -50 and originalV<= WINDOWHEIGHT+50:
-        pygame.draw.line(windowSurface, colour,(originalH,originalV),(newH,newV),4)
+    originalH = (position[0] - skid[2]) + WINDOWWIDTH / 2  # Calculate the original horizontal position
+    originalV = (position[1] - skid[3]) + (WINDOWHEIGHT / 2) + 18  # Calculate the original vertical position
+    newH = (position[0] - skid[0]) + WINDOWWIDTH / 2  # Calculate the new horizontal position
+    newV = (position[1] - skid[1]) + (WINDOWHEIGHT / 2) + 18  # Calculate the new vertical position
+    if originalH >= -50 and originalH <= WINDOWWIDTH + 50 and originalV >= -50 and originalV <= WINDOWHEIGHT + 50:
+        pygame.draw.line(windowSurface, colour, (originalH, originalV), (newH, newV), 4)  # Draw a line between the original and new positions
 
-def recordSkid(skidCount,resolution,location,wheels):
+# This function records skidmarks based on the skid count, resolution, location, and number of wheels.
+# It updates the skid count and appends skid positions to the location list.
+# If the skid count is less than 1, it stores the current wheel positions as the old positions.
+# If the skid count is greater than 1, it decreases the skid count.
+# If the skid count is 1, it appends the skid positions to the location list and updates the old positions.
+def recordSkid(skidCount, resolution, location, wheels):
     if skidCount < 1:
-        oldRearPosition[0] = rearWheel[0]
+        oldRearPosition[0] = rearWheel[0]  # Store current rear wheel position as old position
         oldRearPosition[1] = rearWheel[1]
         if wheels == 2:
-            oldFrontPosition[0] = frontWheel[0]
+            oldFrontPosition[0] = frontWheel[0]  # Store current front wheel position as old position
             oldFrontPosition[1] = frontWheel[1]
-        skidCount = resolution
+        skidCount = resolution  # Reset skid count
         return skidCount
     elif skidCount > 1:
-        skidCount -= 1
+        skidCount -= 1  # Decrease skid count
         return skidCount
     else:
-        skidRear = [rearWheel[0],rearWheel[1],oldRearPosition[0],oldRearPosition[1]]
-        location.append(skidRear)
-        oldRearPosition[0] = rearWheel[0]
+        skidRear = [rearWheel[0], rearWheel[1], oldRearPosition[0], oldRearPosition[1]]  # Create skid position for rear wheel
+        location.append(skidRear)  # Append skid position to location list
+        oldRearPosition[0] = rearWheel[0]  # Update old rear wheel position
         oldRearPosition[1] = rearWheel[1]
         if wheels == 2:
-            skidFront = [frontWheel[0],frontWheel[1],oldFrontPosition[0],oldFrontPosition[1]]
-            location.append(skidFront)
-            oldFrontPosition[0] = frontWheel[0]
+            skidFront = [frontWheel[0], frontWheel[1], oldFrontPosition[0], oldFrontPosition[1]]  # Create skid position for front wheel
+            location.append(skidFront)  # Append skid position to location list
+            oldFrontPosition[0] = frontWheel[0]  # Update old front wheel position
             oldFrontPosition[1] = frontWheel[1]
-        skidCount = resolution
+        skidCount = resolution  # Reset skid count
         return skidCount
 
+# This function plays a sound based on the state of acceleration.
 def playSound():
-    if accelerating[0]:
-        revChannel.play(revSound[revSound[0]])
+    if accelerating[0]:  # If accelerating is True
+        revChannel.play(revSound[revSound[0]])  # Play the rev sound
     else:
-        freewheelSound[0] = revSound[0]
-        revChannel.play(freewheelSound[freewheelSound[0]])
+        freewheelSound[0] = revSound[0]  # Set freewheel sound index to the current rev sound index
+        revChannel.play(freewheelSound[freewheelSound[0]])  # Play the freewheel sound
 
 # run the game loop
 setDisplay(WINDOWWIDTH,WINDOWHEIGHT)
